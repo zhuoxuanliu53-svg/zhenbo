@@ -51,7 +51,7 @@ def phase(name):
 
 try:
     # Dedicated emulator fixture reset; never run this against a user's phone.
-    if run('shell', 'pm', 'path', PACKAGE):
+    if ('package:' + PACKAGE) in run('shell', 'pm', 'list', 'packages', PACKAGE).splitlines():
         if 'Success' not in run('uninstall', PACKAGE):
             raise RuntimeError('Could not reset the emulator fixture.')
     for apk in [args.old_apk, test_apk]:

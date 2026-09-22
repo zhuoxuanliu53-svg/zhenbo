@@ -33,7 +33,7 @@ class V10PlaybackReliabilityTest {
     private val publicUris = mutableListOf<Uri>()
     private lateinit var scenario: ActivityScenario<MainActivity>
 
-    @Before fun launch() = runBlocking {
+    @Before fun launch(): Unit = runBlocking<Unit> {
         scenario = ActivityScenario.launch(MainActivity::class.java)
         withContext(Dispatchers.Main) {
             graph.timers.cancel()
@@ -42,7 +42,7 @@ class V10PlaybackReliabilityTest {
         delay(300)
     }
 
-    @After fun cleanUp() = runBlocking {
+    @After fun cleanUp(): Unit = runBlocking<Unit> {
         withContext(Dispatchers.Main) {
             graph.timers.cancel()
             graph.playback.connect().apply { pause(); clearMediaItems() }
@@ -65,7 +65,7 @@ class V10PlaybackReliabilityTest {
             .also { mediaIds += it.id; graph.dao.putMedia(listOf(it)) }
     }
 
-    @Test fun clearingQueueAlsoClearsSavedSnapshot() = runBlocking {
+    @Test fun clearingQueueAlsoClearsSavedSnapshot(): Unit = runBlocking<Unit> {
         val source = fixture("clear")
         withContext(Dispatchers.Main) { graph.playback.play(listOf(source.id), PlaybackMode.REPEAT_ONE) }
         withTimeout(10_000) { graph.playback.state.first { it.isPlaying && it.ids == listOf(source.id) } }
@@ -75,7 +75,7 @@ class V10PlaybackReliabilityTest {
         withContext(Dispatchers.Main) { graph.playback.toggle(); assertEquals(0, graph.playback.connect().mediaItemCount) }
     }
 
-    @Test fun missingRestoredItemDoesNotSeekOrPlayAnotherFile() = runBlocking {
+    @Test fun missingRestoredItemDoesNotSeekOrPlayAnotherFile(): Unit = runBlocking<Unit> {
         val valid = fixture("valid")
         val missing = fixture("deleted", missing = true)
         graph.preferences.save(PlaybackSnapshot(listOf(valid.id, missing.id), 1, 2_600, PlaybackMode.REPEAT_ONE))
@@ -90,7 +90,7 @@ class V10PlaybackReliabilityTest {
         assertFalse(graph.playback.state.value.isPlaying)
     }
 
-    @Test fun resumingSavedMiddleItemKeepsTheOriginalQueueOrder() = runBlocking {
+    @Test fun resumingSavedMiddleItemKeepsTheOriginalQueueOrder(): Unit = runBlocking<Unit> {
         val sources = (0..2).map { fixture("order-$it") }
         graph.preferences.save(PlaybackSnapshot(sources.map { it.id }, 1, 1_200, PlaybackMode.REPEAT_ONE))
         withContext(Dispatchers.Main) {
@@ -103,7 +103,7 @@ class V10PlaybackReliabilityTest {
         }
     }
 
-    @Test fun corruptItemIsSkippedInSingleRepeatWithoutUnpausing() = runBlocking {
+    @Test fun corruptItemIsSkippedInSingleRepeatWithoutUnpausing(): Unit = runBlocking<Unit> {
         val bad = fixture("corrupt", corrupt = true)
         val good = fixture("good")
         withContext(Dispatchers.Main) {
@@ -123,7 +123,7 @@ class V10PlaybackReliabilityTest {
         assertFalse(graph.playback.state.value.isPlaying)
     }
 
-    @Test fun allCorruptItemsTerminateEvenWithShuffleAndRepeatEnabled() = runBlocking {
+    @Test fun allCorruptItemsTerminateEvenWithShuffleAndRepeatEnabled(): Unit = runBlocking<Unit> {
         val sources = (0..2).map { fixture("broken-$it", corrupt = true) }
         withContext(Dispatchers.Main) { graph.playback.play(sources.map { it.id }, PlaybackMode.SHUFFLE) }
         withTimeout(10_000) {
@@ -133,7 +133,7 @@ class V10PlaybackReliabilityTest {
         assertFalse(graph.playback.state.value.isPlaying)
     }
 
-    @Test fun completedQueueCanBePlayedAgain() = runBlocking {
+    @Test fun completedQueueCanBePlayedAgain(): Unit = runBlocking<Unit> {
         val source = fixture("ended")
         withContext(Dispatchers.Main) { graph.playback.play(listOf(source.id), PlaybackMode.ORDERED) }
         withTimeout(10_000) { graph.playback.state.first { it.isPlaying } }
@@ -148,7 +148,7 @@ class V10PlaybackReliabilityTest {
         withTimeout(5_000) { graph.playback.state.first { it.isPlaying && it.positionMs < 2_900 } }
     }
 
-    @Test fun trashedCollectionCannotReplacePlaybackOrItsTimer() = runBlocking {
+    @Test fun trashedCollectionCannotReplacePlaybackOrItsTimer(): Unit = runBlocking<Unit> {
         Assume.assumeTrue(android.os.Build.VERSION.SDK_INT >= 30)
         Assume.assumeTrue(graph.schedules.canSchedule())
         val current = fixture("current")
@@ -182,7 +182,7 @@ class V10PlaybackReliabilityTest {
         assertEquals(listOf(current.id), graph.playback.state.value.ids)
     }
 
-    @Test fun failedScheduledStartPausesItsRequestAndCancelsItsTimer() = runBlocking {
+    @Test fun failedScheduledStartPausesItsRequestAndCancelsItsTimer(): Unit = runBlocking<Unit> {
         val source = fixture("failed-start")
         val schedule = ScheduleEntity(collectionId = "", hour = 0, minute = 0, mode = PlaybackMode.REPEAT_ONE.name, stopMinutes = 30)
         withContext(Dispatchers.Main) {
@@ -195,7 +195,7 @@ class V10PlaybackReliabilityTest {
         }
     }
 
-    @Test fun failedScheduledStartDoesNotPauseNewManualPlayback() = runBlocking {
+    @Test fun failedScheduledStartDoesNotPauseNewManualPlayback(): Unit = runBlocking<Unit> {
         val oldSource = fixture("old-start")
         val newSource = fixture("manual-start")
         val schedule = ScheduleEntity(collectionId = "", hour = 0, minute = 0, mode = PlaybackMode.REPEAT_ONE.name, stopMinutes = 30)
@@ -210,7 +210,7 @@ class V10PlaybackReliabilityTest {
         }
     }
 
-    @Test fun failedScheduledStartDoesNotCancelAnEditedTimerWithTheSameId() = runBlocking {
+    @Test fun failedScheduledStartDoesNotCancelAnEditedTimerWithTheSameId(): Unit = runBlocking<Unit> {
         val source = fixture("edited-timer")
         val schedule = ScheduleEntity(collectionId = "", hour = 0, minute = 0, mode = PlaybackMode.REPEAT_ONE.name, stopMinutes = 30)
         withContext(Dispatchers.Main) {

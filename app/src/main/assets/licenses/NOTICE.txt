@@ -1,0 +1,44 @@
+Zhenbo (formerly JingTing) 1.0.0
+Third-party attribution and license information
+
+The project MIT license applies to Zhenbo's own code. Third-party components
+retain their original licenses and copyright notices. No endorsement by the
+following projects is implied.
+
+AndroidX (except the separately listed repackaged Protocol Buffers library)
+The Android Open Source Project and respective contributors
+Apache License 2.0: Apache-2.0.txt
+
+Kotlin standard/compatibility runtimes; kotlinx.coroutines;
+kotlinx.serialization; JetBrains annotations
+JetBrains s.r.o. and respective authors and contributors
+Apache License 2.0: Apache-2.0.txt
+
+Guava; failureaccess; listenablefuture
+The Guava Authors
+Apache License 2.0: Apache-2.0.txt
+
+Okio
+Square, Inc. and contributors
+Apache License 2.0: Apache-2.0.txt
+
+JSR-305 / FindBugs annotations; Error Prone annotations;
+J2ObjC annotations; JSpecify
+Their respective authors and contributors
+Apache License 2.0: Apache-2.0.txt
+
+Checker Framework qualifiers (checker-qual 3.43.0)
+Copyright 2004-present by the Checker Framework developers
+MIT License and original copyright notice: Checker-Framework-MIT.txt
+
+Protocol Buffers Java 4.28.2, repackaged by AndroidX as
+datastore-preferences-external-protobuf 1.1.7
+Copyright 2008 Google Inc. All rights reserved.
+BSD-3-Clause license and original copyright notice: Protobuf-BSD-3-Clause.txt
+
+Exact releaseRuntimeClasspath coordinates, including BOM and metadata-only
+artifacts, are listed in DEPENDENCIES.txt. License verification sources are
+listed in SOURCES.md. The project's own license is in Zhenbo-MIT.txt.
+
+The application does not distribute the developer's FFmpeg executable or the
+Android instrumentation test framework. Test audio/video assets are synthetic.

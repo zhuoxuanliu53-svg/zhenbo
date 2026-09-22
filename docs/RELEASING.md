@@ -18,6 +18,8 @@ APK、源码压缩包和 SHA-256 校验文件放在对应 GitHub Release，不�
 
 在测试设备或模拟器上运行与修改有关的设备测试，单独记录 Android 版本、升级安装、后台播放、定时、导出与异常恢复结果。检查最终 APK 的权限、版本、非调试属性和签名，不把编译成功当作设备测试通过。未验证的真机场景应保留在测试报告中。
 
+依赖变化时复核许可清单，将根目录 `licenses/` 与 `app/src/main/assets/licenses/` 保持一致。后者随独立 APK 分发，包含 Apache 2.0、Checker Framework MIT、重打包 Protobuf BSD 许可及来源说明。维护脚本使用 Python 3.11 或更新版本。
+
 ## 官方签名身份
 
 `tools/sign_release.py` 是官方维护者的 Windows 离线签名工具。首次初始化：
