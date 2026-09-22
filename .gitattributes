@@ -1,0 +1,23 @@
+* text=auto eol=lf
+
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.jar binary
+*.zip binary
+*.apk binary
+*.aab binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.mp4 binary
+*.m4a binary
+*.mp3 binary
+*.wav binary
+*.ogg binary
+*.flac binary
+*.pdf binary

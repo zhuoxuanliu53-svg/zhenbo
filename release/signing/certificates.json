@@ -1,0 +1,6 @@
+{
+  "legacySha256": "ad3e5ae8a5dd45a1a7d01f35efd4d0aadb60fe23f472464707bc638e55992f13",
+  "releaseSha256": "505abbfaf165c1d57fe06798c8772ec0ab80863d2849205700291c291424ad0a",
+  "rotationMinSdkVersion": 28,
+  "minSupportedAndroidApi": 29
+}

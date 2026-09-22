@@ -1,0 +1,7 @@
+<resources><style name="Theme.JingTing" parent="android:style/Theme.Material.NoActionBar">
+    <item name="android:fontFamily">sans</item><item name="android:windowLightStatusBar">false</item>
+    <item name="android:statusBarColor">#100E0C</item><item name="android:navigationBarColor">#100E0C</item>
+    <item name="android:windowBackground">#100E0C</item><item name="android:colorBackground">#100E0C</item>
+    <item name="android:colorAccent">#C6A477</item><item name="android:forceDarkAllowed">false</item>
+    <item name="android:windowActionModeOverlay">true</item><item name="android:windowLightNavigationBar">false</item>
+</style></resources>
