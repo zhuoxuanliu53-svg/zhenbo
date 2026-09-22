@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -75,6 +76,10 @@ import androidx.compose.ui.semantics.*
 
 @Composable internal fun CollectionsPage(vm: PlayerViewModel, media: List<MediaEntity>, collections: List<CollectionEntity>, notify: () -> Unit) {
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
+    // AnimatedContent's composition path changes between navigating into a collection
+    // and restoring directly into it. Give each detail page a stable saveable registry,
+    // which also survives the temporary empty result before Room resubscribes.
+    val detailStates = rememberSaveableStateHolder()
     var creating by remember { mutableStateOf(false) }
     var rename by remember { mutableStateOf<CollectionEntity?>(null) }
     var delete by remember { mutableStateOf<CollectionEntity?>(null) }
@@ -109,7 +114,7 @@ import androidx.compose.ui.semantics.*
                 }
             }
         }
-    } else key(shown.id) {
+    } else detailStates.SaveableStateProvider(shown.id) {
         CollectionDetail(vm, shown, media, collections, notify, { selected = null }, { rename = shown })
     }
     }

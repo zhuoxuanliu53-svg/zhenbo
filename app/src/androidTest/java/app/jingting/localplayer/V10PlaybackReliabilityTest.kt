@@ -37,7 +37,12 @@ class V10PlaybackReliabilityTest {
         scenario = ActivityScenario.launch(MainActivity::class.java)
         withContext(Dispatchers.Main) {
             graph.timers.cancel()
-            graph.playback.connect().apply { pause(); clearMediaItems() }
+            graph.playback.connect().apply {
+                pause()
+                clearMediaItems()
+                shuffleModeEnabled = false
+                repeatMode = Player.REPEAT_MODE_OFF
+            }
         }
         delay(300)
     }
@@ -109,15 +114,24 @@ class V10PlaybackReliabilityTest {
         withContext(Dispatchers.Main) {
             graph.playback.connect().apply {
                 pause()
+                shuffleModeEnabled = false
                 repeatMode = Player.REPEAT_MODE_ONE
-                setMediaItems(listOf(bad.ref().toMediaItem(), good.ref().toMediaItem()))
+                setMediaItems(listOf(bad.ref().toMediaItem(), good.ref().toMediaItem()), 0, 0)
+                assertEquals("The corrupt fixture must be the item being prepared", bad.id, currentMediaItem?.mediaId)
                 prepare()
             }
         }
-        withTimeout(10_000) {
-            while (!withContext(Dispatchers.Main) {
-                graph.playback.connect().let { it.mediaItemCount == 1 && it.currentMediaItem?.mediaId == good.id && it.playbackState == Player.STATE_READY }
-            }) delay(20)
+        try {
+            withTimeout(10_000) {
+                while (!withContext(Dispatchers.Main) {
+                    graph.playback.connect().let { it.mediaItemCount == 1 && it.currentMediaItem?.mediaId == good.id && it.playbackState == Player.STATE_READY }
+                }) delay(20)
+            }
+        } catch (timeout: TimeoutCancellationException) {
+            val diagnostic = withContext(Dispatchers.Main) {
+                graph.playback.connect().let { "count=${it.mediaItemCount}, index=${it.currentMediaItemIndex}, state=${it.playbackState}, shuffle=${it.shuffleModeEnabled}, repeat=${it.repeatMode}, playWhenReady=${it.playWhenReady}, expectedGood=${it.currentMediaItem?.mediaId == good.id}" }
+            }
+            throw AssertionError("Corrupt-file recovery did not settle: $diagnostic", timeout)
         }
         withContext(Dispatchers.Main) { assertFalse(graph.playback.connect().playWhenReady) }
         assertFalse(graph.playback.state.value.isPlaying)

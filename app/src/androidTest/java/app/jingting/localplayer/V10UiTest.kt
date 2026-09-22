@@ -97,6 +97,8 @@ class V10UiTest {
     @Test fun collectionSelectionAndAddFilesSheetSurviveActivityRecreation() {
         openCollection()
         node(1).performTouchInput { longClick(center) }; node(0).performClick()
+        compose.onNodeWithText("已选 2").assertIsDisplayed()
+        number(1, 1); number(0, 2)
         compose.activityRule.scenario.recreate()
         compose.waitUntil(10_000) { compose.onAllNodesWithText("已选 2").fetchSemanticsNodes().isNotEmpty() }
         number(1, 1); number(0, 2)
@@ -107,6 +109,7 @@ class V10UiTest {
         compose.onNode(hasSetTextAction()).performTextReplacement(token)
         Espresso.closeSoftKeyboard()
         node(2).performTouchInput { longClick(center) }; node(0).performClick()
+        compose.onNodeWithText("添加 (2)").assertIsDisplayed()
         compose.activityRule.scenario.recreate()
         compose.waitUntil(10_000) { compose.onAllNodesWithText("添加 (2)").fetchSemanticsNodes().isNotEmpty() }
         number(2, 1); number(0, 2)

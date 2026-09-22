@@ -15,7 +15,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 ALIAS = Path.home() / 'jingting-workspace'
-RUNTIME = ALIAS if (ALIAS / '.tools/jdk').is_dir() else ROOT
+RUNTIME = ALIAS if (ALIAS / '.tools/jdk').is_dir() and ALIAS.resolve() == ROOT.resolve() else ROOT
 PRIVATE = Path.home() / '.zhenbo-signing'
 PUBLIC = ROOT / 'release/signing'
 LEGACY_SHA256 = 'ad3e5ae8a5dd45a1a7d01f35efd4d0aadb60fe23f472464707bc638e55992f13'
