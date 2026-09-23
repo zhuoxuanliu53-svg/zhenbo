@@ -3,7 +3,8 @@ package app.jingting.localplayer.ui
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -31,6 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable internal fun MediaTile(
     item: MediaEntity, selecting: Boolean, number: Int, click: () -> Unit,
@@ -127,18 +130,55 @@ import kotlinx.coroutines.withContext
     val displayed = remember(order, lookup) { (order + lookup.keys).distinct().mapNotNull { lookup[it] } }
     LazyVerticalGrid(GridCells.Fixed(3), state = state, userScrollEnabled = dragging == null,
         modifier = modifier.testTag("collection-grid").pointerInput(state) {
-            detectDragGesturesAfterLongPress(
-                onDragStart = { point ->
-                    if (!saving) state.layoutInfo.visibleItemsInfo.firstOrNull {
-                        point.x >= it.offset.x && point.x < it.offset.x + it.size.width && point.y >= it.offset.y && point.y < it.offset.y + it.size.height
-                    }?.let {
-                        val id = it.key as String
-                        dragging = id; pointer = point; grab = point - Offset(it.offset.x.toFloat(), it.offset.y.toFloat()); moved = false
-                        begin(id); haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            awaitEachGesture {
+                val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                var validHold = true
+                withTimeoutOrNull(viewConfiguration.longPressTimeoutMillis) {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        val change = event.changes.firstOrNull { it.id == down.id }
+                        if (change == null || !change.pressed ||
+                            (change.position - down.position).getDistance() > viewConfiguration.touchSlop) {
+                            validHold = false
+                            return@withTimeoutOrNull
+                        }
                     }
-                },
-                onDrag = { change, _ -> if (dragging != null) { change.consume(); pointer = change.position; moveAtPointer() } },
-                onDragEnd = {
+                }
+                if (!validHold) return@awaitEachGesture
+                val pressed = down
+                val item = state.layoutInfo.visibleItemsInfo.firstOrNull {
+                    pressed.position.x >= it.offset.x && pressed.position.x < it.offset.x + it.size.width &&
+                        pressed.position.y >= it.offset.y && pressed.position.y < it.offset.y + it.size.height
+                } ?: return@awaitEachGesture
+                val id = item.key as? String ?: return@awaitEachGesture
+                if (saving) return@awaitEachGesture
+                begin(id)
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                val start = pressed.position
+                var dragStarted = false
+                var completed = false
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    val change = event.changes.firstOrNull { it.id == pressed.id } ?: break
+                    if (!change.pressed) {
+                        val wasCancelled = change.isConsumed
+                        change.consume()
+                        completed = !wasCancelled
+                        break
+                    }
+                    if ((change.position - start).getDistance() >= viewConfiguration.touchSlop) {
+                        if (!dragStarted) {
+                            dragStarted = true
+                            dragging = id; pointer = change.position
+                            grab = start - Offset(item.offset.x.toFloat(), item.offset.y.toFloat())
+                            moved = false
+                        }
+                        change.consume()
+                        pointer = change.position
+                        moveAtPointer()
+                    }
+                }
+                if (dragStarted && completed) {
                     dragging = null
                     if (moved) {
                         val result = order.toList(); saving = true
@@ -149,9 +189,10 @@ import kotlinx.coroutines.withContext
                             finally { saving = false }
                         }
                     }
-                },
-                onDragCancel = { dragging = null; pendingAnchor = null; moved = false; order = currentEntries.map { it.entry.id } },
-            )
+                } else if (dragStarted) {
+                    dragging = null; pendingAnchor = null; moved = false; order = currentEntries.map { it.entry.id }
+                }
+            }
         },
         horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
         items(displayed, key = { it.entry.id }) { entry ->

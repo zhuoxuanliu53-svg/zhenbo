@@ -110,7 +110,7 @@ class V05InteractionTest {
         assertEquals(original, order())
         compose.onNodeWithContentDescription("返回集合").performClick()
         compose.onNodeWithTag("collection-${collection.id}").performClick()
-        compose.waitForIdle()
+        compose.waitUntil(10_000) { compose.onAllNodesWithTag("media-${media[0].id}").fetchSemanticsNodes().isNotEmpty() }
         assertTrue(node(0).fetchSemanticsNode().boundsInRoot.left < node(1).fetchSemanticsNode().boundsInRoot.left)
         screenshot("v05-collection.png")
     }

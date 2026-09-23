@@ -83,7 +83,8 @@ class UnifiedTimerTest {
         withContext(Dispatchers.Main) { graph.timers.cancel() }
         withTimeout(5_000) { graph.playback.state.first { it.sleepDeadline == 0L } }
         assertEquals(TimerTask.CANCELLED, graph.timers.state.value!!.status)
-        assertTrue(graph.playback.state.value.isPlaying)
+        withTimeout(5_000) { graph.playback.state.first { it.isPlaying } }
+        Unit
     }
 
     @Test fun collectionCountdownChangesSourceButEditingPreservesPausedPosition() = runBlocking {
