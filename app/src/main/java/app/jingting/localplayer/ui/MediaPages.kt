@@ -161,6 +161,7 @@ import androidx.compose.ui.semantics.*
                 { vm.playStartingAt(entries.map { it.entry.mediaId }, item.id) },
                 { actions.addIds = listOf(item.id) }, { actions.renameIds = listOf(item.id) },
                 { actions.export = ExportRequest(listOf(item.id), false) },
+                onLongPress = { editing = true; if (entry.entry.id !in selected) chosen = selected + entry.entry.id },
                 onRemove = { vm.removeEntries(listOf(entry.entry.id)) }, modifier = motion)
         }
     }
