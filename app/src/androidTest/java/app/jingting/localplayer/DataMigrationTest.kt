@@ -45,7 +45,7 @@ class DataMigrationTest {
             old.version = 1
         }
         try {
-            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3).build().useDatabase { db ->
+            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build().useDatabase { db ->
                 val dao = db.dao() // The first query opens and validates the actual migration.
                 assertEquals("睡前", dao.collection("collection")!!.name)
                 assertEquals(listOf("two", "one"), dao.entries("collection").map { it.mediaId })
@@ -65,7 +65,7 @@ class DataMigrationTest {
                 dao.renameMedia("one", "雨夜")
                 assertEquals("雨夜", dao.observeEntries("collection").first().last().title)
             }
-            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3).build().useDatabase { db ->
+            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build().useDatabase { db ->
                 assertEquals("雨夜", db.dao().mediaByIds(listOf("one")).single().title)
                 assertEquals("旧视频.mp4", db.dao().rawMedia().first { it.id == "one" }.title)
             }
@@ -98,7 +98,7 @@ class DataMigrationTest {
             old.version = 2
         }
         try {
-            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_2_3).build().useDatabase { db ->
+            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build().useDatabase { db ->
                 val dao = db.dao()
                 assertEquals("旧集合", dao.collection("v2-collection")!!.name)
                 assertEquals("v2-media", dao.entries("v2-collection").single().mediaId)
@@ -132,7 +132,7 @@ class DataMigrationTest {
                 dao.putSchedule(schedule.copy(collectionId = "", queueIds = "[\"v2-media\"]"))
                 dao.putExport(complete.copy(strategy = "COPY_AAC", elapsedMs = 1234))
             }
-            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_2_3).build().useDatabase { db ->
+            Room.databaseBuilder(context, AppDatabase::class.java, name).addMigrations(AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build().useDatabase { db ->
                 assertEquals("[\"v2-media\"]", db.dao().schedules().single().queueIds)
                 assertEquals("COPY_AAC", db.dao().export("v2-complete")!!.strategy)
                 assertEquals(1234L, db.dao().export("v2-complete")!!.elapsedMs)

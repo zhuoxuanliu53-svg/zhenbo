@@ -262,8 +262,8 @@ internal class MediaActionState {
         { vm.createCollectionWithMedia(it, ids); actions.addIds = null },
         { vm.addToCollection(it, ids); actions.addIds = null }, { actions.addIds = null }) }
     actions.renameIds?.let { ids -> RenameMediaDialog(media, ids, { actions.renameIds = null }) { names -> vm.renameMediaBatch(names); actions.renameIds = null } }
-    actions.export?.let { request -> ExportDialog(vm, media, request.ids, request.concatenate, { actions.export = null }, { ordered, names, mode ->
-        notify(); vm.exportBatch(ordered, names, request.concatenate, mode); actions.export = null
+    actions.export?.let { request -> ExportDialog(vm, media, request.ids, request.concatenate, { actions.export = null }, { ordered, names, mode, subtitles ->
+        notify(); vm.exportBatch(ordered, names, request.concatenate, mode, subtitles); actions.export = null
     }, { vm.play(listOf(it)) }) }
 }
 

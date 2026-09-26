@@ -1,9 +1,11 @@
 # 第三方依赖与图标说明
 
-枕波的项目代码使用根目录 `LICENSE` 中的 MIT 许可。**MIT 不改变第三方依赖的许可、版权归属或声明。** 以下按 V1.0 的 `app/gradle.lockfile` 中 `releaseRuntimeClasspath` 核查；含间接依赖和 BOM，完整 142 个坐标与版本见 [依赖清单](licenses/DEPENDENCIES.txt)。使用这些项目不代表官方关联或背书。
+枕波的项目代码使用根目录 `LICENSE` 中的 MIT 许可。**MIT 不改变第三方依赖的许可、版权归属或声明。** 以下按 V1.1 的 `app/gradle.lockfile` 中 `releaseRuntimeClasspath` 核查；含间接依赖和 BOM，完整坐标与版本见 [依赖清单](licenses/DEPENDENCIES.txt)。使用这些项目不代表官方关联或背书。
 
 | 项目及当前版本 | 许可 |
 |---|---|
+| ONNX Runtime Android 1.22.0 | MIT；附带上游第三方声明 |
+| PP-OCRv5 mobile 检测、识别模型与字典 | Apache-2.0；固定来源与 SHA256 见 `app/src/main/assets/ocr/models.json` |
 | AndroidX：Activity、Compose / Material、Core、Lifecycle、Room、SQLite、DataStore、Media3 等，具体版本见清单 | Apache-2.0；下列重打包 protobuf 除外 |
 | Kotlin 标准库 2.2.10、兼容运行库 1.8.0 / 1.9.22；kotlinx.coroutines 1.10.2；kotlinx.serialization 1.7.3；JetBrains annotations 23.0.0 | Apache-2.0 |
 | Guava 33.3.1-android、failureaccess 1.0.2、listenablefuture 9999.0-empty-to-avoid-conflict-with-guava | Apache-2.0 |
@@ -14,6 +16,8 @@
 
 完整许可与归属随源码保存在 [licenses/](licenses/)，并以相同字节内容随 APK 放在 `assets/licenses/`：
 
+- [ONNX Runtime MIT](licenses/ONNX-Runtime-MIT.txt)、[上游第三方声明](licenses/ONNX-Runtime-ThirdPartyNotices.txt)
+- [PaddleOCR Apache-2.0](licenses/PaddleOCR-Apache-2.0.txt)
 - [Apache-2.0 全文](licenses/Apache-2.0.txt)
 - [Checker Framework MIT 全文及版权声明](licenses/Checker-Framework-MIT.txt)
 - [Protocol Buffers BSD-3-Clause 全文及版权声明](licenses/Protobuf-BSD-3-Clause.txt)

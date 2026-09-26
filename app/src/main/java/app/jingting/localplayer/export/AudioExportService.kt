@@ -58,6 +58,7 @@ class AudioExportService : Service() {
                     return@launch
                 }
                 currentId = next.id
+                cancelledIds.remove(next.id)
                 currentJob = launch { process(next) }
                 currentJob?.join()
                 currentId = null
@@ -70,6 +71,10 @@ class AudioExportService : Service() {
     private suspend fun process(initial: ExportEntity) {
         if (initial.id in cancelledIds || graph.exports.cancellationRequested(initial.id) || graph.dao.export(initial.id)?.state != "queued") {
             if (initial.id in cancelledIds || graph.exports.cancellationRequested(initial.id)) graph.dao.putExport(initial.copy(state = "cancelled"))
+            return
+        }
+        if (initial.subtitleOptions != null) {
+            SubtitleExportRunner(this, { plan, output, id -> encodeAac(plan, output, id) }, { phase, id, percent -> getSystemService(NotificationManager::class.java).notify(201, notification(phase, id, percent)) }).run(initial)
             return
         }
         var task = initial

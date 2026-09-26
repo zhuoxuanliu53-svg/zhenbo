@@ -1,4 +1,4 @@
-Zhenbo (formerly JingTing) 1.0.0
+Zhenbo (formerly JingTing) 1.1.0
 Third-party attribution and license information
 
 The project MIT license applies to Zhenbo's own code. Third-party components
@@ -42,3 +42,12 @@ listed in SOURCES.md. The project's own license is in Zhenbo-MIT.txt.
 
 The application does not distribute the developer's FFmpeg executable or the
 Android instrumentation test framework. Test audio/video assets are synthetic.
+
+ONNX Runtime 1.22.0
+Microsoft Corporation and contributors
+MIT license and bundled dependency notices: ONNX-Runtime-MIT.txt, ONNX-Runtime-ThirdPartyNotices.txt
+
+PP-OCRv5 mobile detection/recognition models and character dictionary
+PaddlePaddle/PaddleOCR contributors
+Apache License 2.0: PaddleOCR-Apache-2.0.txt
+Model provenance and checksums: assets/ocr/models.json

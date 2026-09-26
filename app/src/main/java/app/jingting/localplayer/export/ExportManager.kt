@@ -45,6 +45,23 @@ class ExportManager(private val context: Context, private val graph: AppGraph) :
         catch (_: Exception) { graph.dao.putExport(item.copy(state = "failed", error = "系统阻止导出任务，请在应用内重试")) }
         return item.id
     }
+    suspend fun enqueueSubtitles(ids: List<String>, title: String, concatenate: Boolean, mode: String, options: app.jingting.localplayer.subtitle.SubtitleExportOptions): String {
+        recover()
+        require(ids.isNotEmpty() && options.sources.map { it.mediaId } == ids)
+        val item = ExportEntity(sourceIds = JSONArray(ids).toString(), title = ExportNames.normalize(title), concatenate = concatenate, exportMode = mode, subtitleOptions = app.jingting.localplayer.subtitle.SubtitleOptionsJson.encode(options), subtitleState = "pending")
+        graph.dao.putExport(item)
+        try { ContextCompat.startForegroundService(context, Intent(context, AudioExportService::class.java)) }
+        catch (_: Exception) { graph.dao.putExport(item.copy(state = "failed", error = "系统阻止任务启动，请重试")) }
+        return item.id
+    }
+    suspend fun retrySubtitles(id: String) {
+        val item = graph.dao.export(id) ?: return
+        require(item.subtitleOptions != null && item.state in setOf("failed", "cancelled"))
+        cancelRequests.remove(id)
+        graph.dao.putExport(item.copy(state = "queued", error = null))
+        try { ContextCompat.startForegroundService(context, Intent(context, AudioExportService::class.java)) }
+        catch (_: Exception) { graph.dao.putExport(item.copy(state = "failed", error = "系统阻止任务启动")) }
+    }
     override fun cancel(id: String) {
         // Remember synchronously: the foreground service may not have been created yet.
         cancelRequests += id
@@ -56,6 +73,14 @@ class ExportManager(private val context: Context, private val graph: AppGraph) :
         val finished = withContext(Dispatchers.IO) {
         if (AudioExportService.running) return@withContext false
         for (e in graph.dao.activeExports()) {
+            if (e.subtitleOptions != null) {
+                val remainingPublication = runCatching {
+                    val options = app.jingting.localplayer.subtitle.SubtitleOptionsJson.decode(e.subtitleOptions)
+                    app.jingting.localplayer.subtitle.SubtitlePairStorage(context, options.directory).clearPending(e.publication)
+                }.getOrDefault(e.publication)
+                graph.dao.putExport(e.copy(state="failed", subtitleState="failed", error=if(e.outputUri != null) "音频已保存，字幕处理被中断" else "上次任务被中断，请重试", publication=remainingPublication))
+                continue
+            }
             var published: String? = null
             e.pendingUri?.let { locator ->
                 runCatching {

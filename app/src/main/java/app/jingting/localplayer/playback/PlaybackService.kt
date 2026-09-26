@@ -29,6 +29,15 @@ class PlaybackService : MediaSessionService() {
         super.onCreate()
         player = ExoPlayer.Builder(this).setAudioAttributes(AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(), true).setHandleAudioBecomingNoisy(true).setWakeMode(C.WAKE_MODE_LOCAL).setSeekBackIncrementMs(10_000).setSeekForwardIncrementMs(10_000).build()
         player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true).setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true).build()
+        val notifications = getSystemService(NotificationManager::class.java)
+        notifications.createNotificationChannel(NotificationChannel("subtitle_entry", "纯播放页", NotificationManager.IMPORTANCE_LOW).apply { lockscreenVisibility = Notification.VISIBILITY_PUBLIC })
+        val pureIntent = PendingIntent.getActivity(this, 110, Intent(this, app.jingting.localplayer.ui.PurePlaybackActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        player.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                if(isPlaying) runCatching { notifications.notify(110, NotificationCompat.Builder(this@PlaybackService,"subtitle_entry").setSmallIcon(R.drawable.ic_notification).setContentTitle("枕波 · 纯播放页").setContentText("点击查看字幕与播放控制").setContentIntent(pureIntent).setSilent(true).setOnlyAlertOnce(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).build()) }
+                else notifications.cancel(110)
+            }
+        })
         session = MediaSession.Builder(this, player).setSessionActivity(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)).setCallback(object : MediaSession.Callback {
             override fun onConnect(s: MediaSession, c: MediaSession.ControllerInfo): MediaSession.ConnectionResult {
                 if (c.packageName != packageName && !c.isTrusted) return MediaSession.ConnectionResult.reject()
@@ -118,6 +127,7 @@ class PlaybackService : MediaSessionService() {
     override fun onDestroy() {
         val snapshot = PlaybackSnapshot(ids(), player.currentMediaItemIndex.coerceAtLeast(0), player.currentPosition.coerceAtLeast(0), mode())
         if (snapshotLoaded) graph.scope.launch { graph.preferences.save(snapshot) }
+        getSystemService(NotificationManager::class.java).cancel(110)
         session.release(); player.release(); scope.cancel(); super.onDestroy()
     }
 }

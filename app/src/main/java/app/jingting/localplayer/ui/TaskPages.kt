@@ -81,8 +81,9 @@ import java.time.*
         items(exports, key = { it.id }) { e -> Surface(color = Panel, shape = RoundedCornerShape(16.dp)) { Column(Modifier.padding(14.dp)) {
             Text(e.title, maxLines = 2)
             val active = e.state in setOf("queued", "running", "publishing")
-            Text(when (e.state) { "queued" -> "等待导出"; "running" -> "处理中 ${e.progress}%"; "publishing" -> "正在保存"; "completed" -> "已保存至 Music/静听/"; "cancelled" -> "已取消"; else -> e.error ?: "导出失败" }, color = if (e.state == "completed") Accent else Muted, style = MaterialTheme.typography.bodySmall)
+            Text(when (e.state) { "queued" -> "等待导出"; "running" -> "${e.phase.ifBlank { "处理中" }} ${e.progress}%"; "publishing" -> "正在保存"; "completed" -> if (e.subtitleOptions != null) "音频和字幕已保存" else "已保存至 Music/静听/"; "cancelled" -> "已取消"; else -> e.error ?: "导出失败" }, color = if (e.state == "completed") Accent else Muted, style = MaterialTheme.typography.bodySmall)
             if (e.state == "completed" && e.strategy != null) Text("${exportStrategyLabel(e.strategy)} · ${"%.1f".format(e.elapsedMs / 1000.0)} 秒", color = Muted, style = MaterialTheme.typography.labelSmall)
+            if (!active && e.subtitleOptions != null && e.state in setOf("failed", "cancelled")) TextButton(onClick = { vm.action { vm.graph.exports.retrySubtitles(e.id) } }) { Text(if(e.outputUri != null) "重试字幕" else "重试") }
             if (active) { LinearProgressIndicator(progress = { e.progress / 100f }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)); TextButton(onClick = { vm.graph.exports.cancel(e.id) }) { Text("取消任务") } }
         } } }
     }

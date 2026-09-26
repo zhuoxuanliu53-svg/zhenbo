@@ -91,8 +91,14 @@ class PlayerViewModel(application: Application) : AndroidViewModel(application) 
         }
     }.await()
     fun export(ids: List<String>, title: String, concatenate: Boolean, mode: String = "ORIGINAL") = action { graph.exports.enqueue(ids, title, concatenate, mode); message.value = "已加入导出任务" }
-    fun exportBatch(ids: List<String>, names: List<String>, concatenate: Boolean, mode: String) = action {
-        if (concatenate) graph.exports.enqueue(ids, names.first(), true, mode)
+    fun exportBatch(ids: List<String>, names: List<String>, concatenate: Boolean, mode: String, subtitles: app.jingting.localplayer.subtitle.SubtitleExportOptions? = null) = action {
+        if (subtitles != null) {
+            if (concatenate) graph.exports.enqueueSubtitles(ids, names.first(), true, mode, subtitles)
+            else ids.forEachIndexed { index, id ->
+                val option = subtitles.sources.single { it.mediaId == id }
+                graph.exports.enqueueSubtitles(listOf(id), names[index], false, mode, subtitles.copy(sources=listOf(option)))
+            }
+        } else if (concatenate) graph.exports.enqueue(ids, names.first(), true, mode)
         else ids.forEachIndexed { index, id -> graph.exports.enqueue(listOf(id), names[index], false, mode) }
         message.value = if (concatenate) "已加入拼接任务" else "已加入 ${ids.size} 个导出任务"
     }

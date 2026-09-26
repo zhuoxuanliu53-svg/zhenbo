@@ -1,8 +1,10 @@
-# 枕波 / Zhenbo 1.0
+# 枕波 / Zhenbo
 
 完全离线的 Android 音频播放器。下载的视频可以直接听声音，支持后台和锁屏播放，无需先转换文件。
 
 [下载 V1.0.0](https://github.com/zhuoxuanliu53-svg/zhenbo/releases/tag/v1.0.0) · [源码仓库](https://github.com/zhuoxuanliu53-svg/zhenbo) · [更新记录](CHANGELOG.md)
+
+当前源码包含 **V1.1.0 字幕测试版**；GitHub 稳定发行仍为 V1.0.0。V1.1 新增离线画面 OCR、内置文本字幕提取、配对音频与 SRT 导出，以及可显示在锁屏之上的纯播放页。[使用说明](docs/V1.1_SUBTITLES.md) · [测试报告](docs/V1.1_TEST_REPORT.md)
 
 ## 安装与使用
 

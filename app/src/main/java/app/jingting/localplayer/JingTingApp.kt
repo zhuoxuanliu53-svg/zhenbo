@@ -22,7 +22,7 @@ class JingTingApp : Application() {
 }
 class AppGraph(val context: Context) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    val db = Room.databaseBuilder(context, AppDatabase::class.java, "jingting.db").addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3).build()
+    val db = Room.databaseBuilder(context, AppDatabase::class.java, "jingting.db").addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4).build()
     val dao = db.dao()
     val preferences = PlayerPreferences(context)
     val media = MediaRepository(context, db)
@@ -30,5 +30,6 @@ class AppGraph(val context: Context) {
     val timers = TimerManager(context, this)
     val schedules = ScheduleManager(context, this)
     val exports = ExportManager(context, this)
+    val subtitles = app.jingting.localplayer.subtitle.SubtitleRepository(context, this)
 }
 val Context.graph: AppGraph get() = (applicationContext as JingTingApp).graph

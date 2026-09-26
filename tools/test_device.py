@@ -27,6 +27,9 @@ run('install', '-r', str(args.test_apk or root / 'app/build/outputs/apk/androidT
 run('shell', 'appops', 'set', 'app.jingting.localplayer', 'SCHEDULE_EXACT_ALARM', 'allow')
 run('shell', 'pm', 'grant', 'app.jingting.localplayer', 'android.permission.POST_NOTIFICATIONS')
 run('shell', 'cmd', 'connectivity', 'airplane-mode', 'enable')
+# Wake and dismiss only a non-secure keyguard; never enter credentials.
+run('shell', 'input', 'keyevent', '224')
+run('shell', 'wm', 'dismiss-keyguard')
 command = adb + ['shell', 'am', 'instrument', '-w', '-r']
 if args.method: command += ['-e', 'class', args.test_class + '#' + args.method]
 elif args.test_class != 'app.jingting.localplayer.MediaIntegrationTest': command += ['-e', 'class', args.test_class]

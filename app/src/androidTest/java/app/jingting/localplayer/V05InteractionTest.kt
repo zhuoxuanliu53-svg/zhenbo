@@ -64,6 +64,7 @@ class V05InteractionTest {
         compose.onNode(tab and hasText("媒体库")).performClick()
         compose.onNode(hasSetTextAction()).performTextReplacement(token)
         Espresso.closeSoftKeyboard(); compose.waitForIdle()
+        compose.onNodeWithTag("library-grid").performScrollToIndex(0)
         compose.waitUntil(10_000) { compose.onAllNodesWithTag("media-${media[0].id}").fetchSemanticsNodes().isNotEmpty() }
     }
     private fun openCollection() {

@@ -148,6 +148,7 @@ internal fun duration(ms: Long): String { val total = ms / 1000; return if (tota
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 28.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         MediaArtwork(media?.uri, media?.isVideo ?: false, Modifier.padding(vertical = 16.dp).size(200.dp).clip(RoundedCornerShape(20.dp)).combinedClickable(onClick = {}, onLongClick = edit, onLongClickLabel = "重命名"), media?.available ?: false)
         Text(p.title, style = MaterialTheme.typography.titleLarge, maxLines = 3, overflow = TextOverflow.Ellipsis)
+        SubtitleControls(vm)
         Text("${p.index + 1} / ${p.ids.size}", color = Muted, modifier = Modifier.padding(top = 8.dp))
         Slider(value = (dragged ?: p.positionMs.toFloat()).coerceIn(0f, p.durationMs.coerceAtLeast(1).toFloat()), onValueChange = { dragged = it }, onValueChangeFinished = { dragged?.let { vm.action { vm.graph.playback.seek(it.toLong()) } }; dragged = null }, valueRange = 0f..p.durationMs.coerceAtLeast(1).toFloat(), enabled = p.durationMs > 0, modifier = Modifier.padding(top = 16.dp).semantics { contentDescription = "播放进度" })
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(duration(dragged?.toLong() ?: p.positionMs), color = Muted); Text(duration(p.durationMs), color = Muted) }

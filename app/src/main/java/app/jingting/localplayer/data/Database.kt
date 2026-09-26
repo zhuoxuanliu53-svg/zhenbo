@@ -22,12 +22,19 @@ data class CollectionItem(@Embedded val entry: EntryEntity, val title: String, v
 @Entity(tableName = "schedules")
 data class ScheduleEntity(@PrimaryKey val id: String = UUID.randomUUID().toString(), val collectionId: String, val hour: Int, val minute: Int, val days: Int = 0, val date: String? = null, val mode: String = PlaybackMode.ORDERED.name, val conflict: String = ConflictPolicy.SKIP.name, val stopMinutes: Int = 0, val enabled: Boolean = true, val nextAt: Long = 0, val handledDate: String? = null, val lastResult: String = "等待启用", val createdAt: Long = System.currentTimeMillis(), @ColumnInfo(defaultValue = "'[]'") val queueIds: String = "[]")
 @Entity(tableName = "exports")
-data class ExportEntity(@PrimaryKey val id: String = UUID.randomUUID().toString(), val sourceIds: String, val title: String, val concatenate: Boolean, val state: String = "queued", val progress: Int = 0, val outputUri: String? = null, val pendingUri: String? = null, val error: String? = null, val createdAt: Long = System.currentTimeMillis(), @ColumnInfo(defaultValue = "'ORIGINAL'") val exportMode: String = "ORIGINAL", val strategy: String? = null, @ColumnInfo(defaultValue = "0") val elapsedMs: Long = 0)
+data class ExportEntity(@PrimaryKey val id: String = UUID.randomUUID().toString(), val sourceIds: String, val title: String, val concatenate: Boolean, val state: String = "queued", val progress: Int = 0, val outputUri: String? = null, val pendingUri: String? = null, val error: String? = null, val createdAt: Long = System.currentTimeMillis(), @ColumnInfo(defaultValue = "'ORIGINAL'") val exportMode: String = "ORIGINAL", val strategy: String? = null, @ColumnInfo(defaultValue = "0") val elapsedMs: Long = 0, val subtitleOptions: String? = null, @ColumnInfo(defaultValue = "'none'") val subtitleState: String = "none", val subtitleUri: String? = null, @ColumnInfo(defaultValue = "''") val phase: String = "", val publication: String? = null)
+
+@Entity(tableName = "subtitles")
+data class SubtitleEntity(@PrimaryKey val mediaId: String, val srt: String, val sourceUri: String? = null, val offsetMs: Long = 0)
 
 private const val MEDIA_DISPLAY_QUERY = "SELECT m.id, m.uri, COALESCE(a.title, m.title) AS title, m.durationMs, m.isVideo, m.available, m.source FROM media m LEFT JOIN media_aliases a ON a.mediaId=m.id"
 
 @Dao
 interface AppDao {
+    @Query("SELECT * FROM subtitles WHERE mediaId = :id") fun observeSubtitle(id: String): Flow<SubtitleEntity?>
+    @Query("SELECT * FROM subtitles WHERE mediaId = :id") suspend fun subtitle(id: String): SubtitleEntity?
+    @Upsert suspend fun putSubtitle(item: SubtitleEntity)
+
     @Query(MEDIA_DISPLAY_QUERY + " WHERE m.available = 1 ORDER BY title COLLATE NOCASE") fun observeMedia(): Flow<List<MediaEntity>>
     @Query(MEDIA_DISPLAY_QUERY + " ORDER BY title COLLATE NOCASE") suspend fun media(): List<MediaEntity>
     @Query(MEDIA_DISPLAY_QUERY + " WHERE m.id IN (:ids)") suspend fun mediaByIds(ids: List<String>): List<MediaEntity>
@@ -58,10 +65,20 @@ interface AppDao {
     @Query("SELECT * FROM exports WHERE state IN ('queued','running','publishing') ORDER BY createdAt") suspend fun activeExports(): List<ExportEntity>
     @Upsert suspend fun putExport(item: ExportEntity)
 }
-@Database(entities = [MediaEntity::class, MediaAliasEntity::class, CollectionEntity::class, EntryEntity::class, ScheduleEntity::class, ExportEntity::class], version = 3, exportSchema = true)
+@Database(entities = [MediaEntity::class, MediaAliasEntity::class, CollectionEntity::class, EntryEntity::class, ScheduleEntity::class, ExportEntity::class, SubtitleEntity::class], version = 4, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): AppDao
     companion object {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS subtitles (mediaId TEXT NOT NULL, srt TEXT NOT NULL, sourceUri TEXT, offsetMs INTEGER NOT NULL, PRIMARY KEY(mediaId))")
+                db.execSQL("ALTER TABLE exports ADD COLUMN subtitleOptions TEXT")
+                db.execSQL("ALTER TABLE exports ADD COLUMN subtitleState TEXT NOT NULL DEFAULT 'none'")
+                db.execSQL("ALTER TABLE exports ADD COLUMN subtitleUri TEXT")
+                db.execSQL("ALTER TABLE exports ADD COLUMN phase TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE exports ADD COLUMN publication TEXT")
+            }
+        }
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE schedules ADD COLUMN queueIds TEXT NOT NULL DEFAULT '[]'")

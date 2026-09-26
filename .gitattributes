@@ -21,3 +21,6 @@ gradlew text eol=lf
 *.ogg binary
 *.flac binary
 *.pdf binary
+
+*.onnx binary
+*.mkv binary

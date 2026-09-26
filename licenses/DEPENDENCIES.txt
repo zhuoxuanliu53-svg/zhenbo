@@ -1,4 +1,4 @@
-Zhenbo 1.0.0 releaseRuntimeClasspath license inventory
+Zhenbo 1.1.0 releaseRuntimeClasspath license inventory
 Source: app/gradle.lockfile and resolved upstream Maven POMs (including parent POMs).
 Includes platform/BOM/metadata coordinates; entries do not imply every artifact has executable code.
 Apache-2.0 is in Apache-2.0.txt. checker-qual MIT is in Checker-Framework-MIT.txt.
@@ -146,3 +146,6 @@ org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.3 | Apache-2.0
 org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3 | Apache-2.0
 org.jetbrains:annotations:23.0.0 | Apache-2.0
 org.jspecify:jspecify:1.0.0 | Apache-2.0
+
+androidx.documentfile:documentfile:1.0.1 | Apache-2.0
+com.microsoft.onnxruntime:onnxruntime-android:1.22.0 | MIT (ONNX-Runtime-MIT.txt; ONNX-Runtime-ThirdPartyNotices.txt)

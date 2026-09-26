@@ -8,3 +8,9 @@
 - `Zhenbo-MIT.txt` 与根目录 `LICENSE` 字节一致。`app/src/main/assets/licenses/` 中全部文件均从根目录 `licenses/` 同源复制，用于单独 APK 分发。
 
 测试和构建依赖未冒充应用运行依赖；完整构建版本仍由 Gradle 锁文件记录。
+
+## V1.1 新增离线 OCR 依赖
+
+- `com.microsoft.onnxruntime:onnxruntime-android:1.22.0`：MIT，附上游 LICENSE 与完整 ThirdPartyNotices。运行时明确调用 `setTelemetry(false)`，APK 保持无 INTERNET 权限。
+- `androidx.documentfile:documentfile:1.0.1`：Apache-2.0。
+- PP-OCRv5 mobile 检测与识别 ONNX 模型：Apache-2.0；来源固定于 PaddlePaddle 官方 Hugging Face 仓库的提交，完整下载 URL、SHA256、大小见 APK `ocr/models.json`。识别字典从随模型发布的 inference.yml 提取，未使用动态模型下载。

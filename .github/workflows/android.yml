@@ -43,6 +43,9 @@ jobs:
           "$sdkmanager" 'platforms;android-37.0' 'build-tools;36.0.0' 'platform-tools'
           printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
 
+      - name: Verify bundled OCR assets
+        run: python3 tools/verify_ocr_assets.py
+
       - name: Test, lint and build
         run: >-
           ./gradlew --no-daemon --stacktrace --console=plain

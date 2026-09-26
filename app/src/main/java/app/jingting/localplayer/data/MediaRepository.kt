@@ -81,7 +81,17 @@ class MediaRepository(private val context: Context, private val db: AppDatabase)
             val canonical = canonicalMediaUri(uri, video)
             // Validate before retaining a grant: rejected selections must not fill the OS grant limit.
             val document = DocumentsContract.isDocumentUri(context, uri)
-            if (document) resolver.takePersistableUriPermission(uri, flags and Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            if (document) {
+                try { resolver.takePersistableUriPermission(uri, flags and Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+                catch (e: SecurityException) {
+                    val covered = resolver.persistedUriPermissions.any { grant -> grant.isReadPermission && android.provider.DocumentsContract.isTreeUri(grant.uri) && grant.uri.authority == uri.authority && runCatching {
+                        val parent = android.provider.DocumentsContract.getTreeDocumentId(grant.uri)
+                        val child = android.provider.DocumentsContract.getDocumentId(uri)
+                        child == parent || child.startsWith(parent.trimEnd('/') + "/")
+                    }.getOrDefault(false) }
+                    if (!covered) throw e
+                }
+            }
             val item = MediaEntity(canonical.toString(), uri.toString(), name, duration, video, source = if (document) "document" else "store")
             db.dao().putMedia(listOf(item)); item
         } finally { r.release() }
